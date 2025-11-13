@@ -199,6 +199,9 @@ class CrosswordCreator():
             #print(f"{assignment[key]}")
             if assignment[key] == set():
                 complete = False
+        for variable in self.domains:
+            if variable not in assignment:
+                return False
         return complete
 
     def consistent(self, assignment):
@@ -266,7 +269,8 @@ class CrosswordCreator():
             values.append((word, self.count_ruled_out_values(var, word, assignment)))
         #print(f"values: {values}")
         #print(sorted(values, key = lambda count: count[1]))
-        return sorted(values, key = lambda count: count[1])
+        list.sort(values, key = lambda count: count[1])
+        return [element[0] for element in values]
     
     def count_ruled_out_values(self, var, word, assignment):
         neighbors = self.find_neighboring_vars_not_in_assignment(var, assignment)
@@ -308,6 +312,8 @@ class CrosswordCreator():
         list.sort(unassigned_variables, key = lambda element: (element[1], -element[2]))
         #list.sort(unassigned_variables, key = lambda element: element[2], reverse = True)
         #print(unassigned_variables)
+        if len(unassigned_variables) == 0:
+            return None
         return unassigned_variables[0][0]
     def count_degree(self, var):
         count = 0
@@ -327,15 +333,19 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
+        
         if self.assignment_complete(assignment):
+            print("hello world")
             return assignment
         unassigned_var = self.select_unassigned_variable(assignment)
         for value in self.order_domain_values(unassigned_var, assignment):
             assignment[unassigned_var] = value
-            result = self.backtrack(assignment)
-            if result is not None:
-                return result
+            if self.consistent(assignment):
+              result = self.backtrack(assignment)
+              if result is not None:
+                  return result
             assignment.pop(unassigned_var, None)
+        return None
             
 
 
